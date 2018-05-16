@@ -1,7 +1,7 @@
 ##############################################################################
 # Bing::ContentAPI
 #
-# Add, modify and delete items from the Bing Merchant Center platform via
+# Add, modify and delete products from the Bing Merchant Center platform via
 # the Bing Ads Content API.
 #
 # https://docs.microsoft.com/bingads/shopping-content/
@@ -15,6 +15,7 @@
 #
 # VERSION HISTORY
 #
+# + v1.01       05/16/2018 dependency and documentation updates
 # + v1.00       05/04/2018 initial release
 #
 # COPYRIGHT AND LICENSE
@@ -46,7 +47,7 @@ use JSON;
 use REST::Client;
 use HTML::Entities;
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 sub new {
     my ($class, $param) = @_;
@@ -236,13 +237,48 @@ __END__
 
 =head1 DESCRIPTION
 
-  Add, modify and delete items from the Bing Merchant Center platform via
+  Add, modify and delete products from the Bing Merchant Center platform via
   the Bing Ads Content API.
 
   https://docs.microsoft.com/bingads/shopping-content/
 
   Authentication is done via OAuth using Authorization Code Grant Flow
   https://docs.microsoft.com/bingads/guides/authentication-oauth
+
+  Steps to authorize a native application and generate an initial refresh token:
+
+  Note: Substitute CLIENT_ID, UNIQUE_CODE and AUTHORIZATION_CODE with the
+  actual values in the appropriate locations in the examples.
+
+  1) Request user consent through web browser:
+  (using existing Bing Ads Microsoft account when prompted)
+
+  https://login.live.com/oauth20_authorize.srf?client_id=CLIENT_ID&scope=bingads.manage&response_type=code&redirect_uri=https://login.live.com/oauth20_desktop.srf&state=UNIQUE_CODE
+
+  Response received:
+  https://login.live.com/oauth20_desktop.srf?code=AUTHORIZATION_CODE&state=UNIQUE_CODE&lc=1033
+
+  2) Use the authorization 'code' received to request the access token and refresh token:
+
+  $ curl \
+    -d client_id=CLIENT_ID \
+    -d code=AUTHORIZATION_CODE \
+    -d grant_type=authorization_code \
+    -d redirect_uri=https://login.live.com/oauth20_desktop.srf \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    https://login.live.com/oauth20_token.srf
+
+  Response:
+  {
+    "token_type": "bearer",
+    "expires_in": 3600,
+    "scope": "bingads.manage",
+    "access_token": "...",
+    "refresh_token": "...",
+    "user_id": "..."
+  }
+
+  3) Use the received refresh_token as the initial refresh_token in Bing::ContentAPI->new()
 
 =head1 SYNOPSIS
 
@@ -485,7 +521,7 @@ __END__
 
 =head3 merchant_id
 
-  merchant_id is the Bing Merchant Center Store ID
+  Merchant ID is the Bing Merchant Center Store ID
   https://bingads.microsoft.com/
 
 =head3 developer_token
@@ -494,7 +530,7 @@ __END__
 
 =head3 client_id
 
-  Client ID is the value configured in "Registering Your Application":
+  Client ID is the Application ID value in "Registering Your Application":
   https://docs.microsoft.com/bingads/guides/authentication-oauth#registerapplication
 
 =head3 redirect_uri
